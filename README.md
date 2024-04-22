@@ -1,3 +1,5 @@
+# Edrys Server
+
 A NodeJS server that can run locally to start the connection with [Edrys_Code_Editor](https://github.com/jh-488/Edrys_Code_Editor). When the data (code) is received from the client, it will store the code in an ".ino" file, compile it and upload it to the board.
 
 To run the server locally :
