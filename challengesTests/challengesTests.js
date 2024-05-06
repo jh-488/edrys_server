@@ -1,4 +1,4 @@
-// Function to add the test run function to a sketch 
+// Function to add the test run function to a sketch (needed for the ArduinoUnit library)
 const addTestRun = (sketch) => {
   const loopIndex = sketch.lastIndexOf("void loop()");
   if (loopIndex !== -1) {
@@ -31,11 +31,42 @@ const createTurnOnLedSketchTest = (usersSketch) => {
   return testSketch;
 };
 
-// Function to get the right test function for the challenge
+// Test for the missing-led challenge
+const fs = require("fs");
+const path = require('path');
+const dataPath = "../challengesData/missingLed.json";
+
+const createMissingLedSketchTest = (usersSketch) => {
+  // Read the already turned on and turned off LEDs from the JSON file
+  const data = fs.readFileSync(path.join(__dirname, dataPath), "utf8");
+  const { turnedOnLEDs, turnedOffLED } = JSON.parse(data);
+
+  // Add test code to the user's sketch
+  const testCode = `
+    #include <ArduinoUnit.h>
+
+    ${usersSketch} 
+
+    test(missingLed) {
+      assertEqual(digitalRead(${turnedOnLEDs[0]}), LOW);
+      assertEqual(digitalRead(${turnedOnLEDs[1]}), LOW);
+      assertEqual(digitalRead(${turnedOffLED}), HIGH);
+    }
+    `;
+
+  const testSketch = addTestRun(testCode);  
+  
+  return testSketch;
+};
+
+
+// Get the correct test function for the challenge
 const testFunctions = (challengeId, usersSketch) => {
   switch (challengeId) {
     case "turn-on-led-001":
       return createTurnOnLedSketchTest(usersSketch);
+    case "missing-led":
+      return createMissingLedSketchTest(usersSketch);
     default:
       return null;
   }

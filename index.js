@@ -4,31 +4,36 @@ const WEB_SOCKET_PORT = process.env.WEB_SOCKET_PORT || 8080;
 const WebSocket = require("ws");
 const WebSocketServer = new WebSocket.Server({ port: WEB_SOCKET_PORT });
 
-// import compile and upload functions
-const {
-  compileAndUploadSketch
-} = require("./controllers/sketchControllers");
+const { compileAndUploadSketch } = require("./controllers/sketchControllers");
 
-// import tests
+const { randomizeLEDs } = require("./controllers/randomizeLEDs");
+
 const { testFunctions } = require("./challengesTests/challengesTests");
 
 
-// Compile and upload the sketch after receiving the data 
 WebSocketServer.on("connection", (ws) => {
   console.log("New client connected");
 
   ws.on("message", async (data) => {
-    // get the challengeId and userSketch from the client
-    const { challengeId, code } = JSON.parse(data);
 
-    // Get the test function for the challenge
-    const testSketch = testFunctions(challengeId, code);
+    const parsedData = JSON.parse(data);
 
-    // Check if the challenge test is available
-    if (testSketch) {
-      compileAndUploadSketch(testSketch, ws, true);
+    // Handle the "missing-led" challenge 
+    if (parsedData.action === "randomizeLeds") {
+      randomizeLEDs(ws);
     } else {
-      compileAndUploadSketch(code, ws, false);
+      // get the challengeId and code from the client (editor)
+      const { challengeId, code } = JSON.parse(data);
+
+      // Get the test function for the challenge if available
+      const testSketch = testFunctions(challengeId, code);
+
+      // Run the test if available, otherwise compile and upload the user's sketch
+      if (testSketch) {
+        compileAndUploadSketch(testSketch, ws, true);
+      } else {
+        compileAndUploadSketch(code, ws, false);
+      }
     }
   });
 

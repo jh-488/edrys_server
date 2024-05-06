@@ -2,14 +2,13 @@
 const { spawn } = require("child_process");
 
 const fs = require("fs");
+const { sketchPath, BOARD_PORT, BOARD_CORE } = require("../helpers/helpers");
 const { startSerialPortListener } = require("./serialPortListener");
 
 // Compile an arduino sketch from an .ino file
-// Change the "arduino:avr:uno" with your arduino core
 compileSketch = (sketchPath) => {
   return new Promise((resolve, reject) => {
-    const args = ["compile", "--log-level", "error", sketchPath, "-b", "arduino:avr:uno"];
-    //const args = ["compile", sketchPath, "-b", "arduino:avr:uno"];
+    const args = ["compile", "--log-level", "error", sketchPath, "-b", BOARD_CORE];
     const compileProcess = spawn("arduino-cli", args);
 
     // Listen for messages and errors in the compilation process
@@ -36,10 +35,9 @@ compileSketch = (sketchPath) => {
 };
 
 // Upload the compiled sketch to the board
-// Change the "arduino:avr:uno" with your arduino core
 uploadSketch = (port, sketchPath) => {
   return new Promise((resolve, reject) => {
-    const args = ["upload", sketchPath, "-p", port, "-b", "arduino:avr:uno"]; 
+    const args = ["upload", sketchPath, "-p", port, "-b", BOARD_CORE]; 
     const uploadProcess = spawn("arduino-cli", args);
 
     // Listen for messages and errors in the upload process
@@ -65,20 +63,6 @@ uploadSketch = (port, sketchPath) => {
   });
 };
 
-
-
-// Path where the sketch is stored
-const sketchPath = "./sketch/sketch.ino";
-
-// Serial port where the arduino is connected
-const args = process.argv.slice(2);
-const portIndex = args.indexOf("--port");
-const BOARD_PORT = portIndex !== -1 ? args[portIndex + 1] : null;
-
-if (!BOARD_PORT) {
-  console.error("Error: Please provide a serial port using --port <port>");
-  process.exit(1);
-}
 
 // Compile and upload the sketch after receiving the data 
 // if the sketch is of type challenge, run the tests. Else just compile and upload
@@ -132,6 +116,9 @@ const compileAndUploadSketch = async (sketch, ws, isChallenge) => {
   }
 };
 
+
 module.exports = {
-    compileAndUploadSketch
+  compileSketch,
+  uploadSketch,
+  compileAndUploadSketch
 }
