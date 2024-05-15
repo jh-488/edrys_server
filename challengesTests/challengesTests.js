@@ -1,17 +1,35 @@
-// Function to add the test run function to a sketch (needed for the ArduinoUnit library)
-const addTestRun = (sketch) => {
-  const loopIndex = sketch.lastIndexOf("void loop()");
-  if (loopIndex !== -1) {
-    const endIndex = sketch.indexOf("}", loopIndex);
+// Function to add the Serial.begin line to a sketch (needed for the serial monitor)
+const addSetupBegin = (sketch) => {
+  const setupIndex = sketch.lastIndexOf("void setup()");
+  if (setupIndex !== -1) {
+    const endIndex = sketch.indexOf("}", setupIndex);
     if (endIndex !== -1) {
       return (
         sketch.slice(0, endIndex) +
-        "   Test::run();\n" +
+        "  Serial.begin(9600);\n" +
         sketch.slice(endIndex)
       );
     }
   }
-}
+};
+
+// Function to add the test run to a sketch (needed for the ArduinoUnit library)
+const addTestRun = (sketch) => {
+  const newSketch = addSetupBegin(sketch);
+
+  const loopIndex = newSketch.lastIndexOf("void loop()");
+  if (loopIndex !== -1) {
+    const endIndex = newSketch.indexOf("}", loopIndex);
+    if (endIndex !== -1) {
+      return (
+        newSketch.slice(0, endIndex) +
+        "   Test::run();\n" +
+        newSketch.slice(endIndex)
+      );
+    }
+  }
+};
+
 
 // Test for the turn-on-led-001 challenge
 const createTurnOnLedSketchTest = (usersSketch) => {
@@ -26,7 +44,7 @@ const createTurnOnLedSketchTest = (usersSketch) => {
     }
     `;
 
-  const testSketch = addTestRun(testCode);  
+  const testSketch = addTestRun(testCode);
   
   return testSketch;
 };
@@ -54,7 +72,7 @@ const createMissingLedSketchTest = (usersSketch) => {
     }
     `;
 
-  const testSketch = addTestRun(testCode);  
+  const testSketch = addTestRun(testCode);
   
   return testSketch;
 };
