@@ -5,16 +5,13 @@ const WebSocket = require("ws");
 const WebSocketServer = new WebSocket.Server({ port: WEB_SOCKET_PORT });
 
 const { compileAndUploadSketch } = require("./controllers/sketchControllers");
-
-//const { randomizeLEDs } = require("./controllers/randomizeLEDs");
-
 const { testFunctions } = require("./challengesTests/challengesTests");
 const { randomizeLEDs } = require("./controllers/randomizeLEDs");
 
 WebSocketServer.on("connection", (ws) => {
   console.log("New client connected");
 
-  ws.on("message", async (data) => {
+  ws.on("message", (data) => {
     // get the challengeId and code from the client (editor or missing led module)
     const { challengeId, code } = JSON.parse(data);
 
